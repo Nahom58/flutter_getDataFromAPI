@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,14 +35,14 @@ class MyHomePage extends StatefulWidget {
 class _DataFromAPIState extends State<MyHomePage> {
   Future getUserData() async {
     var response =
-        await http.get(Uri.https('jsonplaceholder.typicode.com', 'users'));
+        await Dio().get('http://10.0.2.2:8000/pigeon/users/');
 
-    var jsonData = jsonDecode(response.body);
+    var jsonData = response.data;
 
     List<User> users = [];
 
     for (var u in jsonData) {
-      User user = User(u['name'], u['email'], u['username']);
+      User user = User(u['first_name']);
       users.add(user);
     }
 
@@ -58,31 +59,35 @@ class _DataFromAPIState extends State<MyHomePage> {
         ),
         body: Container(
             child: Card(
-              child: FutureBuilder(
-                  future: getUserData(),
-                  builder: (context, snapshot) {
-                    if (snapshot.data == null) {
-                      return Container(
-                          child: const Center(
-                        child: Text('loading ...'),
-                      ));
-                    } else {
-                      return ListView.builder(
-                          itemCount: snapshot.data.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text(snapshot.data[index].name),
-                              subtitle: Text(snapshot.data[index].userName),
-                              trailing: Text(snapshot.data[index].email),
-                            );
-                        });
-                    }
-                  }),
-            )));
+          child: FutureBuilder(
+              future: getUserData(),
+              builder: (context, snapshot) {
+                if (snapshot.data == null) {
+                  print('here 0');
+                  print(snapshot.data);
+                  return Container(
+                      child: const Center(
+                    child: Text('loading NOW...'),
+                  ));
+                } else {
+                  print('here 1');
+                  print(snapshot.data);
+                  return ListView.builder(
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(snapshot.data[index].first_name),
+                          // subtitle: Text(snapshot.data[index].userName),
+                          // trailing: Text(snapshot.data[index].email),
+                        );
+                      });
+                }
+              }),
+        )));
   }
 }
 
 class User {
-  final String name, email, userName;
-  User(this.name, this.email, this.userName);
+  final String first_name;
+  User(this.first_name);
 }
